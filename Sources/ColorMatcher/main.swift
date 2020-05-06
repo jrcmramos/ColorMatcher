@@ -24,8 +24,8 @@ struct Distance: ParsableCommand {
     @Option(help: "The path to the output folder containing the color distance results")
     private var resultsFolder: String?
 
-    @Flag(name: .long, help: "Show extra logging for debugging purposes")
-    private var verbose: Bool
+    @Flag(name: .long, help: "Replaces Xib colors with spec colors")
+    private var replaceXibColors: Bool
 
     func run() throws {
         let originalColorsInput: Input = Input(string: self.originalColors).require(hint: "Invalid original colors input")
@@ -48,6 +48,16 @@ struct Distance: ParsableCommand {
                 print("Result for color named `\(original.name)`: Original \(original.value); Match \(match.value)")
             }
         }
+
+        self.replaceXibColorsIfNeeded()
+    }
+
+    private func replaceXibColorsIfNeeded() {
+        guard self.replaceXibColors else {
+            return
+        }
+
+
     }
 
     private func save(results: [(original: ColorSpec, match: ColorSpec)], into resultsFolder: String) {

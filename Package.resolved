@@ -9,6 +9,15 @@
           "revision": "9f04d1ff1afbccd02279338a2c91e5f27c45e93a",
           "version": "0.0.5"
         }
+      },
+      {
+        "package": "SwiftyXMLParser",
+        "repositoryURL": "https://github.com/jrcmramos/SwiftyXMLParser.git",
+        "state": {
+          "branch": "#43-SPM",
+          "revision": "b4ae1e8d05c6c34ab1c47a30dab0e1d8ec0d5013",
+          "version": null
+        }
       }
     ]
   },

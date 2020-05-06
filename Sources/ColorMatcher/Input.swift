@@ -8,13 +8,15 @@
 enum Input {
     case hex(ColorSpec)
     case catalog([ColorSpec])
-    case input([ColorSpec])
+    case json([ColorSpec])
+    case xib([ColorSpec])
 
     var colorSpecs: [ColorSpec] {
         switch self {
         case .hex(let colorSpec): return [colorSpec]
         case .catalog(let colorSpecs): return colorSpecs
-        case .input(let colorSpecs): return colorSpecs
+        case .json(let colorSpecs): return colorSpecs
+        case .xib(let colorSpecs): return colorSpecs
         }
     }
 
@@ -28,7 +30,7 @@ enum Input {
 
         if string.hasSuffix(".json") {
             let colorSpecs: [ColorSpec] = File.read(from: string)
-            self = .input(colorSpecs)
+            self = .json(colorSpecs)
 
             return
         }
@@ -36,6 +38,13 @@ enum Input {
         if string.hasSuffix(".xcassets") {
             let colorSpecs: [ColorSpec] = AssetCatalogParser.parseCatalog(at: string)
             self = .catalog(colorSpecs)
+
+            return
+        }
+
+        if string.hasSuffix(".xib") {
+            let colorSpecs: [ColorSpec] = XibCatalogParser.parseXib(at: string)
+            self = .xib(colorSpecs)
 
             return
         }
