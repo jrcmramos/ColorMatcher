@@ -11,45 +11,32 @@ struct ColorMatcher: ParsableCommand {
 }
 
 struct Distance: ParsableCommand {
-    @Option(help: "The path to the base color specifications")
-    private var inputColorsPath: String?
 
-    @Option(help: "The value of a color specification. (If no `inputColorsPath` specified)")
-    private var hex: String?
+    // Input color
+    @Argument(help: "Color(s) to find match agains specs. You can provide hex values, path to an Asset catalog or json with `ColorSpec` format")
+    private var originalColors: String
 
-    @Argument(help: "The path to the color specifications")
-    private var specColorsPath: String
+    // Specs
+    @Argument(help: "Color specifications. You can provide hex values, path to an Asset catalog or json with `ColorSpec` format")
+    private var specColors: String
 
+    // Results
     @Option(help: "The path to the output folder containing the color distance results")
     private var resultsFolder: String?
-
-    @Option(help: "The path to the color specification")
-    private var color: String?
 
     @Flag(name: .long, help: "Show extra logging for debugging purposes")
     private var verbose: Bool
 
-    var inputColors: [ColorSpec] {
-        guard let inputColorsPath = self.inputColorsPath else {
-            if let colorHex = self.hex {
-                return [ColorSpec(name: "Hex-Value", value: colorHex)]
-            }
-
-            fatalError("`inputColorsPath` or `hex` should be provided.")
-        }
-
-        return File.read(from: inputColorsPath)
-    }
-
     func run() throws {
-        let specColors: [ColorSpec] = File.read(from: self.specColorsPath)
-        let inputColors = self.inputColors
+        let originalColorsInput: Input = Input(string: self.originalColors).require(hint: "Invalid original colors input")
+        let specColorsInput: Input = Input(string: self.specColors).require(hint: "Invalid spec colors input")
 
-        let colorMatches: [(original: ColorSpec, match: ColorSpec)] = inputColors.map { inputColor in
+        let originalColors = originalColorsInput.colorSpecs
+        let specColors = specColorsInput.colorSpecs
+
+        let colorMatches: [(original: ColorSpec, match: ColorSpec)] = originalColors.map { inputColor in
             let results: [(ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
             let sortedResults = results.sorted { $0.1 < $1.1 }
-
-            print(sortedResults)
 
             return (inputColor, sortedResults.first!.0)
         }
