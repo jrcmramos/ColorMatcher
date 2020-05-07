@@ -35,7 +35,8 @@ final class ColorMatcherTests: XCTestCase {
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
             return bundle.bundleURL.deletingLastPathComponent()
         }
-        fatalError("couldn't find the products directory")
+        print("couldn't find the products directory")
+        exit(1)
       #else
         return Bundle.main.bundleURL
       #endif

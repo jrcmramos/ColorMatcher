@@ -11,6 +11,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.5"),
+        .package(url: "https://github.com/jrcmramos/SwiftyXMLParser.git", .branch("#43-SPM"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -18,7 +19,8 @@ let package = Package(
         .target(
             name: "ColorMatcher",
             dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser")
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "SwiftyXMLParser", package: "SwiftyXMLParser"),
         ]),
         .testTarget(
             name: "ColorMatcherTests",

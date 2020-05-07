@@ -11,7 +11,8 @@ final class File {
 
             return try decoder.decode(T.self, from: data)
         } catch {
-            fatalError("Unable to read the specified file. Path: \(path)")
+            print("Unable to read the specified file. Path: \(path)")
+            exit(1)
         }
     }
 

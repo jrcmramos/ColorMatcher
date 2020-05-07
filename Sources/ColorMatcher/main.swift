@@ -24,29 +24,52 @@ struct Distance: ParsableCommand {
     @Option(help: "The path to the output folder containing the color distance results")
     private var resultsFolder: String?
 
-    @Flag(name: .long, help: "Show extra logging for debugging purposes")
-    private var verbose: Bool
+    @Flag(name: .long, help: "Replaces Xib colors with spec colors")
+    private var replaceXibColors: Bool
 
     func run() throws {
         let originalColorsInput: Input = Input(string: self.originalColors).require(hint: "Invalid original colors input")
         let specColorsInput: Input = Input(string: self.specColors).require(hint: "Invalid spec colors input")
-
         let originalColors = originalColorsInput.colorSpecs
         let specColors = specColorsInput.colorSpecs
 
-        let colorMatches: [(original: ColorSpec, match: ColorSpec)] = originalColors.map { inputColor in
-            let results: [(ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
-            let sortedResults = results.sorted { $0.1 < $1.1 }
+        self.checkCommandLineParameters(originalColors: originalColors, specColors: specColors)
+        let colorMatches = self.findMatches(originalColors: originalColors, specColors: specColors)
+        self.presentResults(colorMatches: colorMatches, resultsFolder: self.resultsFolder)
+        self.replaceXibColorsIfNeeded(originalColorsInput: originalColorsInput, colorMatches: colorMatches.map { $0.match })
+    }
 
-            return (inputColor, sortedResults.first!.0)
+    private func checkCommandLineParameters(originalColors: [ColorSpec], specColors: [ColorSpec]) {
+        guard !originalColors.isEmpty else {
+            print("`originalColors` parameter shouldn´t be empty")
+            Foundation.exit(1)
         }
 
-        if let resultsFolder = self.resultsFolder {
+        guard !specColors.isEmpty else {
+            print("`specColors` parameter shouldn´t be empty")
+            Foundation.exit(1)
+        }
+    }
+
+    private func findMatches(originalColors: [ColorSpec], specColors: [ColorSpec]) ->  [(original: ColorSpec, match: ColorSpec)] {
+        return originalColors.map { inputColor in
+            let results: [(ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
+            let sortedResults = results.sorted { $0.1 < $1.1 }
+            let bestMatch = (sortedResults.first?.0) ?? specColors[0]
+
+            return (inputColor, bestMatch)
+        }
+    }
+
+    private func presentResults(colorMatches: [(original: ColorSpec, match: ColorSpec)], resultsFolder: String?) {
+        if let resultsFolder = resultsFolder {
             self.save(results: colorMatches, into: resultsFolder)
-        } else {
-            colorMatches.forEach { original, match in
-                print("Result for color named `\(original.name)`: Original \(original.value); Match \(match.value)")
-            }
+
+            return
+        }
+
+        colorMatches.forEach { original, match in
+            print("Result for color named `\(original.name)`: Original \(original.value); Match \(match.value)")
         }
     }
 
@@ -67,22 +90,14 @@ struct Distance: ParsableCommand {
             saveImage(matchImage, original, "match")
         }
     }
+
+    private func replaceXibColorsIfNeeded(originalColorsInput: Input, colorMatches: [ColorSpec]) {
+        guard self.replaceXibColors, case .xib = originalColorsInput else {
+            return
+        }
+
+        XibCatalogParser.replaceXib(at: self.originalColors, with: colorMatches)
+    }
 }
 
 ColorMatcher.main()
-
-extension NSImage {
-
-    var pngData: Data? {
-        guard let tiffRepresentation = tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) else { return nil }
-        return bitmapImage.representation(using: .png, properties: [:])
-    }
-
-    func pngWrite(to url: URL, options: Data.WritingOptions = .atomic) {
-        do {
-            try pngData?.write(to: url, options: options)
-        } catch {
-            fatalError(error.localizedDescription)
-        }
-    }
-}
