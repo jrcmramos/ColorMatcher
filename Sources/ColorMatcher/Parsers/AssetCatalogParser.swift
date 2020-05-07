@@ -58,7 +58,7 @@ final class AssetCatalogParser {
             let data = try! Data(contentsOf: fileUrl)
 
             guard let colorAssetCatalog: ColorAssetCatalog = try? decoder.decode(ColorAssetCatalog.self, from: data) else {
-                print("Could not parse catalog at path: \(path)")
+                print("Could not parse catalog at path: \(fileUrl)")
                 continue
             }
 
