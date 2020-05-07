@@ -1,9 +1,4 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 06.05.20.
-//
 
 import Foundation
 
@@ -30,21 +25,33 @@ struct ColorAssetCatalog: Codable {
 fileprivate extension ColorSpec {
 
     init?(name: String, assetCatalog: ColorAssetCatalog) {
-        guard let firstColor = assetCatalog.colors.first else {
+        guard let firstColor = assetCatalog.colors.first?.color else {
             return nil
         }
 
         self.name = name
-        self.value = [firstColor.color.components.red, firstColor.color.components.green, firstColor.color.components.blue]
+        self.value = {
+            guard firstColor.components.red.lowercased().hasPrefix("0x") else {
+                let rFactor = (Float(firstColor.components.red)! * 255.0).toHex
+                let gFactor = (Float(firstColor.components.green)! * 255.0).toHex
+                let bFactor = (Float(firstColor.components.blue)! * 255.0).toHex
+
+                return rFactor + gFactor + bFactor
+            }
+
+            return [firstColor.components.red,
+                    firstColor.components.green,
+                    firstColor.components.blue]
                         .map { $0.dropFirst(2) }
                         .joined()
+        }()
     }
 
 }
 
 final class AssetCatalogParser {
 
-    static func parseCatalog(at path: String) -> [ColorSpec] {
+    static func parse(at path: String) -> [ColorSpec] {
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(atPath: path)
         let decoder = JSONDecoder()
@@ -73,6 +80,8 @@ final class AssetCatalogParser {
 
             colorSpecs.append(colorSpec)
         }
+
+        print("Loaded \(colorSpecs.count) colors from catalog")
 
         return colorSpecs
     }

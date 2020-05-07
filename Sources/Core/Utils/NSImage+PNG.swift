@@ -1,13 +1,8 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 07.05.20.
-//
 
 import AppKit
 
-extension NSImage {
+public extension NSImage {
 
     var pngData: Data? {
         guard let tiffRepresentation = tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) else { return nil }
