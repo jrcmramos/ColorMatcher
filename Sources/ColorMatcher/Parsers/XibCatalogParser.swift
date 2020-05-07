@@ -45,7 +45,7 @@ private enum XibColor {
             return
         }
 
-        print("Unable to find color scheme for colorSpace: \(colorSpaceDescriptor)")
+        print("Skipping color scheme with colorSpace: \(colorSpaceDescriptor)")
 
         return nil
     }
@@ -101,7 +101,7 @@ final class XibCatalogParser {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML.parse(data, trimming: .whitespacesAndNewlines)
-        var allElements = xml.all ?? []
+        let allElements = xml.all ?? []
 
         self.replace(from: allElements, index: 0, colorMatches: colorMatches)
         let resources = xml.document.resources.element ?? XML.Element(name: "resources")
@@ -122,9 +122,7 @@ final class XibCatalogParser {
     }
 
     private static func namedColors(for colorMatches: [ColorSpec], currentResources: XML.Element) ->  [XML.Element] {
-
-        var colorMatches = Array(Set(colorMatches))
-        print(currentResources)
+        let colorMatches = Array(Set(colorMatches))
 
         return colorMatches.compactMap { colorMatch in
             guard !currentResources.childElements.contains(where: { $0.attributes["name"] == colorMatch.name }) else {

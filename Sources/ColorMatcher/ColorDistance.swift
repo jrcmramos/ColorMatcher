@@ -15,7 +15,8 @@ extension ColorSpec {
         let valueWithoutPrefix = self.value.hasPrefix("0x") ? String(self.value.dropFirst(2)) : self.value
 
         guard let hexValue = UInt(valueWithoutPrefix, radix: 16) else {
-            fatalError("Invalid Color Spec value.\n\(self)")
+            print("Invalid Color Spec value.\n\(self)")
+            exit(1)
         }
 
         return hexValue
@@ -26,9 +27,9 @@ extension ColorSpec {
     }
 
     var color: NSColor {
-        let red = CGFloat((hex >> 16) & 0xFF) / 255.0
-        let green = CGFloat((hex >> 8) & 0xFF) / 255.0
-        let blue = CGFloat(hex & 0xFF) / 255.0
+        let red = CGFloat(self.extract(component: .r)) / 255.0
+        let green = CGFloat(self.extract(component: .g)) / 255.0
+        let blue = CGFloat(self.extract(component: .b)) / 255.0
 
         return NSColor(calibratedRed: red, green: green, blue: blue, alpha: 1.0)
     }
