@@ -1,18 +1,18 @@
 [
     {
-        "name": "Spec 1",
+        "name": "Spec1",
         "value": "0xA00000"
     },
     {
-        "name": "Spec 2",
+        "name": "Spec2",
         "value": "0x00FA00"
     },
     {
-        "name": "Spec 3",
+        "name": "Spec3",
         "value": "0x0000FA"
     },
         {
-        "name": "Spec 4",
+        "name": "Spec4",
         "value": "0xFFFFFA"
     },
 ]

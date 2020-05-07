@@ -49,15 +49,15 @@ struct Distance: ParsableCommand {
             }
         }
 
-        self.replaceXibColorsIfNeeded()
+        self.replaceXibColorsIfNeeded(with: colorMatches.map { $0.match } )
     }
 
-    private func replaceXibColorsIfNeeded() {
+    private func replaceXibColorsIfNeeded(with colorMatches: [ColorSpec]) {
         guard self.replaceXibColors else {
             return
         }
 
-
+        XibCatalogParser.replaceXib(at: self.originalColors, with: colorMatches)
     }
 
     private func save(results: [(original: ColorSpec, match: ColorSpec)], into resultsFolder: String) {
