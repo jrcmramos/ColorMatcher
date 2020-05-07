@@ -1,9 +1,4 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 06.05.20.
-//
 
 import Foundation
 
@@ -37,9 +32,9 @@ fileprivate extension ColorSpec {
         self.name = name
         self.value = {
             guard firstColor.components.red.lowercased().hasPrefix("0x") else {
-                let rFactor = String(format:"%02X", Int(Float(firstColor.components.red)! * 255.0))
-                let gFactor = String(format:"%02X", Int(Float(firstColor.components.green)! * 255.0))
-                let bFactor = String(format:"%02X", Int(Float(firstColor.components.blue)! * 255.0))
+                let rFactor = (Float(firstColor.components.red)! * 255.0).toHex
+                let gFactor = (Float(firstColor.components.green)! * 255.0).toHex
+                let bFactor = (Float(firstColor.components.blue)! * 255.0).toHex
 
                 return rFactor + gFactor + bFactor
             }
@@ -56,7 +51,7 @@ fileprivate extension ColorSpec {
 
 final class AssetCatalogParser {
 
-    static func parseCatalog(at path: String) -> [ColorSpec] {
+    static func parse(at path: String) -> [ColorSpec] {
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(atPath: path)
         let decoder = JSONDecoder()

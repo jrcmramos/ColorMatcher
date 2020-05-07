@@ -1,9 +1,4 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 05.05.20.
-//
 
 import AppKit
 import CoreGraphics
@@ -15,8 +10,7 @@ extension NSImage {
         let image = NSImage(size: size)
         image.lockFocus()
         color.drawSwatch(in: .init(origin: .zero, size: .init(width: size.width,
-                                                              height: size.height))
-        )
+                                                              height: size.height)))
         image.unlockFocus()
 
         return image

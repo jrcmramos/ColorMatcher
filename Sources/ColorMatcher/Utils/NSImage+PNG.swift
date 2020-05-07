@@ -1,9 +1,4 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 07.05.20.
-//
 
 import AppKit
 

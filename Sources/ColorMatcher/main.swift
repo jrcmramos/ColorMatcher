@@ -13,29 +13,29 @@ struct ColorMatcher: ParsableCommand {
 struct Distance: ParsableCommand {
 
     // Input color
-    @Argument(help: "Color(s) to find match agains specs. You can provide hex values, path to an Asset catalog or json with `ColorSpec` format")
+    @Argument(help: "Color(s) to compare against specs. You can provide a hexadecimal value, asset catalog path, xib file path or a json file with `ColorSpec` format")
     private var originalColors: String
 
     // Specs
-    @Argument(help: "Color specifications. You can provide hex values, path to an Asset catalog or json with `ColorSpec` format")
+    @Argument(help: "Color specifications.  You can provide a hexadecimal value, asset catalog path or a json file with `ColorSpec` format")
     private var specColors: String
 
     // Results
-    @Option(help: "The path to the output folder containing the color distance results")
+    @Option(help: "Output folder containg a comparision between the original and spec color.")
     private var resultsFolder: String?
 
-    @Flag(name: .long, help: "Replaces Xib colors with spec colors")
+    @Flag(name: .long, help: "Replaces Xib colors with spec colors (if a xib file is provided)")
     private var replaceXibColors: Bool
 
     func run() throws {
-        let originalColorsInput: Input = Input(string: self.originalColors).require(hint: "Invalid original colors input")
-        let specColorsInput: Input = Input(string: self.specColors).require(hint: "Invalid spec colors input")
+        let originalColorsInput: Input = Input(content: self.originalColors).require(hint: "Invalid original colors input")
+        let specColorsInput: Input = Input(content: self.specColors).require(hint: "Invalid spec colors input")
         let originalColors = originalColorsInput.colorSpecs
         let specColors = specColorsInput.colorSpecs
 
         self.checkCommandLineParameters(originalColors: originalColors, specColors: specColors)
-        let colorMatches = self.findMatches(originalColors: originalColors, specColors: specColors)
-        self.presentResults(colorMatches: colorMatches, resultsFolder: self.resultsFolder)
+        let colorMatches = self.findMatches(from: originalColors, to: specColors)
+        self.presentResults(with: colorMatches, resultsFolder: self.resultsFolder)
         self.replaceXibColorsIfNeeded(originalColorsInput: originalColorsInput, colorMatches: colorMatches.map { $0.match })
     }
 
@@ -51,17 +51,17 @@ struct Distance: ParsableCommand {
         }
     }
 
-    private func findMatches(originalColors: [ColorSpec], specColors: [ColorSpec]) ->  [(original: ColorSpec, match: ColorSpec)] {
+    private func findMatches(from originalColors: [ColorSpec], to specColors: [ColorSpec]) ->  [(original: ColorSpec, match: ColorSpec)] {
         return originalColors.map { inputColor in
             let results: [(ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
             let sortedResults = results.sorted { $0.1 < $1.1 }
-            let bestMatch = (sortedResults.first?.0) ?? specColors[0]
+            let bestMatch = (sortedResults.first?.0).require(hint: "specColors` parameter shouldn´t be empty")
 
             return (inputColor, bestMatch)
         }
     }
 
-    private func presentResults(colorMatches: [(original: ColorSpec, match: ColorSpec)], resultsFolder: String?) {
+    private func presentResults(with colorMatches: [(original: ColorSpec, match: ColorSpec)], resultsFolder: String?) {
         if let resultsFolder = resultsFolder {
             self.save(results: colorMatches, into: resultsFolder)
 
@@ -92,14 +92,14 @@ struct Distance: ParsableCommand {
     }
 
     private func replaceXibColorsIfNeeded(originalColorsInput: Input, colorMatches: [ColorSpec]) {
-        guard self.replaceXibColors, case .xib = originalColorsInput else {
+        guard self.replaceXibColors, case .xib(let path, _) = originalColorsInput else {
             return
         }
 
-        XibCatalogParser.replaceXib(at: self.originalColors, with: colorMatches)
+        XibParser.replace(at: path, with: colorMatches)
         // XML element's attributes are parsed as dictionaries, we cannot guarantee the same order as before
         // Using `intool` we can respect Xcode's sorting and formatting
-        shell("ibtool", "--upgrade", self.originalColors, "--write", self.originalColors)
+        shell("ibtool", "--upgrade", path, "--write", self.originalColors)
     }
 }
 

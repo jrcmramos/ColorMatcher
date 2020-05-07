@@ -1,50 +1,45 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 06.05.20.
-//
 
 enum Input {
-    case hex(ColorSpec)
-    case catalog([ColorSpec])
-    case json([ColorSpec])
-    case xib([ColorSpec])
+    case hex(colorSpecs: ColorSpec)
+    case catalog(colorSpecs: [ColorSpec])
+    case json(colorSpecs: [ColorSpec])
+    case xib(path: String, colorSpecs: [ColorSpec])
 
     var colorSpecs: [ColorSpec] {
         switch self {
         case .hex(let colorSpec): return [colorSpec]
         case .catalog(let colorSpecs): return colorSpecs
         case .json(let colorSpecs): return colorSpecs
-        case .xib(let colorSpecs): return colorSpecs
+        case .xib(_, let colorSpecs): return colorSpecs
         }
     }
 
-    init?(string: String) {
-        if string.hasPrefix("0x") {
-            let colorSpec = ColorSpec(name: "Hex-Value", value: string)
-            self = .hex(colorSpec)
+    init?(content: String) {
+        if content.hasPrefix("0x") {
+            let colorSpec = ColorSpec(name: "Hex-Value", value: content)
+            self = .hex(colorSpecs: colorSpec)
 
             return
         }
 
-        if string.hasSuffix(".json") {
-            let colorSpecs: [ColorSpec] = File.read(from: string)
-            self = .json(colorSpecs)
+        if content.hasSuffix(".json") {
+            let colorSpecs: [ColorSpec] = File.read(from: content)
+            self = .json(colorSpecs: colorSpecs)
 
             return
         }
 
-        if string.hasSuffix(".xcassets") {
-            let colorSpecs: [ColorSpec] = AssetCatalogParser.parseCatalog(at: string)
-            self = .catalog(colorSpecs)
+        if content.hasSuffix(".xcassets") {
+            let colorSpecs: [ColorSpec] = AssetCatalogParser.parse(at: content)
+            self = .catalog(colorSpecs: colorSpecs)
 
             return
         }
 
-        if string.hasSuffix(".xib") {
-            let colorSpecs: [ColorSpec] = XibCatalogParser.parseXib(at: string)
-            self = .xib(colorSpecs)
+        if content.hasSuffix(".xib") {
+            let colorSpecs: [ColorSpec] = XibParser.parse(at: content)
+            self = .xib(path: content, colorSpecs: colorSpecs)
 
             return
         }

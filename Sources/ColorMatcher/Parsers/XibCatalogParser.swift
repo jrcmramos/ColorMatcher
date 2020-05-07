@@ -1,9 +1,4 @@
 //
-//  File.swift
-//  
-//
-//  Created by José Ramos on 06.05.20.
-//
 
 import Foundation
 import SwiftyXML
@@ -53,25 +48,25 @@ private enum XibColor {
     func makeColorSpec(name: String) -> ColorSpec {
         switch self {
         case .calibratedWhite(let white):
-            let rgbFactor = String(format:"%02X", Int(white * 255.0))
-            let hex = "0x" + rgbFactor + rgbFactor + rgbFactor
+            let rgbFactor = (white * 255.0).toHex
+            let hex = rgbFactor + rgbFactor + rgbFactor
 
             return ColorSpec(name: name, value: hex)
         case .calibratedRGB(let red, let green, let blue):
-            let rFactor = String(format:"%02X", Int(red * 255.0))
-            let gFactor = String(format:"%02X", Int(green * 255.0))
-            let bFactor = String(format:"%02X", Int(blue * 255.0))
+            let rFactor = (red * 255.0).toHex
+            let gFactor = (green * 255.0).toHex
+            let bFactor = (blue * 255.0).toHex
 
-            let hex = "0x" + rFactor + gFactor + bFactor
+            let hex = rFactor + gFactor + bFactor
 
             return ColorSpec(name: name, value: hex)
         }
     }
 }
 
-final class XibCatalogParser {
+final class XibParser {
 
-    static func parseXib(at path: String) -> [ColorSpec] {
+    static func parse(at path: String) -> [ColorSpec] {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data)!
@@ -96,7 +91,7 @@ final class XibCatalogParser {
         return currentColorSpecs
     }
 
-    static func replaceXib(at path: String, with colorMatches: [ColorSpec]) {
+    static func replace(at path: String, with colorMatches: [ColorSpec]) {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data).require(hint: "Unable to parse XML file. Path: \(path)")
@@ -118,7 +113,8 @@ final class XibCatalogParser {
 
             try document.write(to: fileUrl, atomically: true, encoding: .nonLossyASCII)
         } catch {
-            // failed to write file – bad permissions, bad filename, missing permissions, or more likely it can't be converted to the encoding
+            print("Failed to override XML file at path: \(path)")
+            exit(1)
         }
     }
 
@@ -137,7 +133,7 @@ final class XibCatalogParser {
                 "red": "\(colorMatch.color.redComponent)",
                 "green": "\(colorMatch.color.greenComponent)",
                 "blue": "\(colorMatch.color.blueComponent)",
-                "alpha": "1",
+                "alpha": "1", // TODO: Limitation
                 "colorSpace": "custom",
                 "customColorSpace": "sRGB"
             ]
