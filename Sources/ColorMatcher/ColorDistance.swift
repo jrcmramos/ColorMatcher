@@ -12,7 +12,7 @@ import AppKit
 extension ColorSpec {
 
     var hex: UInt {
-        let valueWithoutPrefix = self.value.hasPrefix("0x") ? String(self.value.dropFirst(2)) : self.value
+        let valueWithoutPrefix = self.value.lowercased().hasPrefix("0x") ? String(self.value.dropFirst(2)) : self.value
 
         guard let hexValue = UInt(valueWithoutPrefix, radix: 16) else {
             print("Invalid Color Spec value.\n\(self)")
@@ -53,11 +53,7 @@ enum ColorComponent {
 final class ColorDistance {
 
     static func distance(from color1: ColorSpec, to color2: ColorSpec) -> CGFloat {
-        let drp2 = Self.distanceByComponent(from: color1, to: color2, component: .r)
-        let dgp2 = Self.distanceByComponent(from: color1, to: color2, component: .g)
-        let dbp2 = Self.distanceByComponent(from: color1, to: color2, component: .b)
-
-        return sqrt(drp2 + dgp2 + dbp2)
+        return color1.color.CIE94(compare: color2.color)
     }
 
     private static func distanceByComponent(from color1: ColorSpec, to color2: ColorSpec, component: ColorComponent) -> CGFloat {

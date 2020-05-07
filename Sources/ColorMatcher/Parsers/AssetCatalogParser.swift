@@ -30,14 +30,26 @@ struct ColorAssetCatalog: Codable {
 fileprivate extension ColorSpec {
 
     init?(name: String, assetCatalog: ColorAssetCatalog) {
-        guard let firstColor = assetCatalog.colors.first else {
+        guard let firstColor = assetCatalog.colors.first?.color else {
             return nil
         }
 
         self.name = name
-        self.value = [firstColor.color.components.red, firstColor.color.components.green, firstColor.color.components.blue]
+        self.value = {
+            guard firstColor.components.red.lowercased().hasPrefix("0x") else {
+                let rFactor = String(format:"%02X", Int(Float(firstColor.components.red)! * 255.0))
+                let gFactor = String(format:"%02X", Int(Float(firstColor.components.green)! * 255.0))
+                let bFactor = String(format:"%02X", Int(Float(firstColor.components.blue)! * 255.0))
+
+                return rFactor + gFactor + bFactor
+            }
+
+            return [firstColor.components.red,
+                    firstColor.components.green,
+                    firstColor.components.blue]
                         .map { $0.dropFirst(2) }
                         .joined()
+        }()
     }
 
 }
@@ -73,6 +85,8 @@ final class AssetCatalogParser {
 
             colorSpecs.append(colorSpec)
         }
+
+        print("Loaded \(colorSpecs.count) colors from catalog")
 
         return colorSpecs
     }

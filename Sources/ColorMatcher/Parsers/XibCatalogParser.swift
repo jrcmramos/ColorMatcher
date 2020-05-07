@@ -32,7 +32,7 @@ private enum XibColor {
             return
         }
 
-        if colorSpace == "calibratedRGB" || customColorSpace == "sRGB" {
+        if colorSpace == "calibratedRGB" || customColorSpace == "sRGB" || customColorSpace == "displayP3" {
             guard let red = element.attributes["red"].flatMap(Float.init),
                  let green = element.attributes["green"].flatMap(Float.init),
                  let blue = element.attributes["blue"].flatMap(Float.init) else {
@@ -76,7 +76,7 @@ final class XibCatalogParser {
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data)!
 
-        return self.colorSpecs(from: xml.children, currentColorSpecs: [])
+        return self.colorSpecs(from: xml.objects.xml!.children, currentColorSpecs: [])
     }
 
     private static func colorSpecs(from elements: [XML], currentColorSpecs: [ColorSpec]) -> [ColorSpec] {
@@ -101,7 +101,7 @@ final class XibCatalogParser {
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data).require(hint: "Unable to parse XML file. Path: \(path)")
 
-        self.replace(from: xml.children, index: 0, colorMatches: colorMatches)
+        self.replace(from: xml.objects.xml!.children, index: 0, colorMatches: colorMatches)
 
         let resources = xml.resources.xml ?? {
             let newResourcesElement = XML(name: "resources")
