@@ -1,16 +1,17 @@
 import ArgumentParser
 import Foundation
+import Core
 import AppKit
 
 struct ColorMatcher: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A command line tool to obtain the difference between two colors using the `deltaE` formula",
-        subcommands: [Distance.self])
+        subcommands: [Match.self])
 
     init() { }
 }
 
-struct Distance: ParsableCommand {
+struct Match: ParsableCommand {
 
     // Input color
     @Argument(help: "Color(s) to compare against specs. You can provide a hexadecimal value, asset catalog path, xib file path or a json file with `ColorSpec` format")
@@ -39,7 +40,7 @@ struct Distance: ParsableCommand {
         self.replaceXibColorsIfNeeded(originalColorsInput: originalColorsInput, colorMatches: colorMatches.map { $0.match })
     }
 
-    private func checkCommandLineParameters(originalColors: [ColorSpec], specColors: [ColorSpec]) {
+    private func checkCommandLineParameters(originalColors: [Core.ColorSpec], specColors: [Core.ColorSpec]) {
         guard !originalColors.isEmpty else {
             print("`originalColors` parameter shouldn´t be empty")
             Foundation.exit(1)
@@ -51,9 +52,9 @@ struct Distance: ParsableCommand {
         }
     }
 
-    private func findMatches(from originalColors: [ColorSpec], to specColors: [ColorSpec]) ->  [(original: ColorSpec, match: ColorSpec)] {
+    private func findMatches(from originalColors: [Core.ColorSpec], to specColors: [Core.ColorSpec]) ->  [(original: Core.ColorSpec, match: Core.ColorSpec)] {
         return originalColors.map { inputColor in
-            let results: [(ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
+            let results: [(Core.ColorSpec, CGFloat)] = specColors.map { ($0, ColorDistance.distance(from: inputColor, to: $0)) }
             let sortedResults = results.sorted { $0.1 < $1.1 }
             let bestMatch = (sortedResults.first?.0).require(hint: "specColors` parameter shouldn´t be empty")
 
@@ -61,7 +62,7 @@ struct Distance: ParsableCommand {
         }
     }
 
-    private func presentResults(with colorMatches: [(original: ColorSpec, match: ColorSpec)], resultsFolder: String?) {
+    private func presentResults(with colorMatches: [(original: Core.ColorSpec, match: Core.ColorSpec)], resultsFolder: String?) {
         if let resultsFolder = resultsFolder {
             self.save(results: colorMatches, into: resultsFolder)
 
@@ -73,8 +74,8 @@ struct Distance: ParsableCommand {
         }
     }
 
-    private func save(results: [(original: ColorSpec, match: ColorSpec)], into resultsFolder: String) {
-        let saveImage: (NSImage, ColorSpec, String) -> Void = { colorImage, color, filename in
+    private func save(results: [(original: Core.ColorSpec, match: Core.ColorSpec)], into resultsFolder: String) {
+        let saveImage: (NSImage, Core.ColorSpec, String) -> Void = { colorImage, color, filename in
             let url = URL(fileURLWithPath: resultsFolder + "/\(color.name)/\(filename).png")
             colorImage.pngWrite(to: url)
         }
@@ -91,7 +92,7 @@ struct Distance: ParsableCommand {
         }
     }
 
-    private func replaceXibColorsIfNeeded(originalColorsInput: Input, colorMatches: [ColorSpec]) {
+    private func replaceXibColorsIfNeeded(originalColorsInput: Input, colorMatches: [Core.ColorSpec]) {
         guard self.replaceXibColors, case .xib(let path, _) = originalColorsInput else {
             return
         }

@@ -64,9 +64,9 @@ private enum XibColor {
     }
 }
 
-final class XibParser {
+public final class XibParser {
 
-    static func parse(at path: String) -> [ColorSpec] {
+    public static func parse(at path: String) -> [ColorSpec] {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data)!
@@ -91,7 +91,7 @@ final class XibParser {
         return currentColorSpecs
     }
 
-    static func replace(at path: String, with colorMatches: [ColorSpec]) {
+    public static func replace(at path: String, with colorMatches: [ColorSpec]) {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
         let xml = XML(data: data).require(hint: "Unable to parse XML file. Path: \(path)")

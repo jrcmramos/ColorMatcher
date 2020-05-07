@@ -3,7 +3,7 @@
 import AppKit
 import CoreGraphics
 
-extension NSImage {
+public extension NSImage {
     static func makeImage(with color: NSColor,
                           size: CGSize = CGSize(width: 100.0, height: 100.0)) -> NSImage {
 

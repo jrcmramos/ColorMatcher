@@ -1,9 +1,9 @@
 
 import Foundation
 
-final class File {
+public final class File {
 
-    static func read<T: Codable>(from path: String) -> T {
+    public static func read<T: Codable>(from path: String) -> T {
         do {
             let fileUrl = URL(fileURLWithPath: path)
             let data = try Data(contentsOf: fileUrl)
@@ -16,7 +16,7 @@ final class File {
         }
     }
 
-    static func createFolder(with path: String) {
+    public static func createFolder(with path: String) {
         let directory = URL(fileURLWithPath: path)
         do
         {
