@@ -9,7 +9,7 @@ The main purpose of this project is to provide an easy solution to readjust colo
 ## Build
 ```
 $ swift build --configuration release
-$ cp -f .build/release/banner /usr/local/bin/banner
+$ cp -f .build/release/color-matcher /usr/local/bin/color-matcher
 ```
 
 ## Usage 
