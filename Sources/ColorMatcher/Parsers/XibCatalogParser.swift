@@ -6,13 +6,13 @@
 //
 
 import Foundation
-import SwiftyXMLParser
+import SwiftyXML
 
 private enum XibColor {
     case calibratedWhite(white: Float)
     case calibratedRGB(red: Float, green: Float, blue: Float)
 
-    init?(element: XML.Element) {
+    init?(element: XML) {
         guard element.name == "color" else {
             return nil
         }
@@ -74,13 +74,12 @@ final class XibCatalogParser {
     static func parseXib(at path: String) -> [ColorSpec] {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
+        let xml = XML(data: data)!
 
-        let xml = XML.parse(data)
-
-        return self.colorSpecs(from: xml.all ?? [], currentColorSpecs: [])
+        return self.colorSpecs(from: xml.children, currentColorSpecs: [])
     }
 
-    private static func colorSpecs(from elements: [XML.Element], currentColorSpecs: [ColorSpec]) -> [ColorSpec] {
+    private static func colorSpecs(from elements: [XML], currentColorSpecs: [ColorSpec]) -> [ColorSpec] {
         var currentColorSpecs = currentColorSpecs
 
         currentColorSpecs = elements.reduce(currentColorSpecs) { newColorSpecs, element in
@@ -91,7 +90,7 @@ final class XibCatalogParser {
             
             newColorSpecs += [xibColorSpec].compactMap { $0 }
 
-            return self.colorSpecs(from: element.childElements, currentColorSpecs: newColorSpecs)
+            return self.colorSpecs(from: element.children, currentColorSpecs: newColorSpecs)
         }
 
         return currentColorSpecs
@@ -100,43 +99,40 @@ final class XibCatalogParser {
     static func replaceXib(at path: String, with colorMatches: [ColorSpec]) {
         let fileUrl = URL(fileURLWithPath: path)
         let data = try! Data(contentsOf: fileUrl)
-        let xml = XML.parse(data, trimming: .whitespacesAndNewlines)
-        let allElements = xml.all ?? []
+        let xml = XML(data: data).require(hint: "Unable to parse XML file. Path: \(path)")
 
-        self.replace(from: allElements, index: 0, colorMatches: colorMatches)
+        self.replace(from: xml.children, index: 0, colorMatches: colorMatches)
 
-        let resources = xml[0].document.resources.element ?? {
-            let newResourcesElement = XML.Element(name: "resources")
-            allElements[0].childElements[0].childElements += [newResourcesElement]
+        let resources = xml.resources.xml ?? {
+            let newResourcesElement = XML(name: "resources")
+            xml.addChild(newResourcesElement)
 
             return newResourcesElement
         }()
-        let namedColors1 = namedColors(for: colorMatches, currentResources: resources)
-        resources.childElements += namedColors1
-
-        // allElements[0] -> Root node
-        // allElements[0].childElements[0] -> Document node
+        let namedColors = self.namedColors(for: colorMatches, currentResources: resources)
+        namedColors.forEach(resources.addChild)
 
         do {
-            let document = try XML.document(.init(allElements))
+            let document = [#"<?xml version="1.0" encoding="UTF-8"?>"#, xml.toXMLString()]
+                               .joined(separator: "\n")
 
-            try document.write(to: fileUrl, atomically: true, encoding: .utf8)
+            try document.write(to: fileUrl, atomically: true, encoding: .nonLossyASCII)
         } catch {
             // failed to write file – bad permissions, bad filename, missing permissions, or more likely it can't be converted to the encoding
         }
     }
 
-    private static func namedColors(for colorMatches: [ColorSpec], currentResources: XML.Element) ->  [XML.Element] {
+    private static func namedColors(for colorMatches: [ColorSpec], currentResources: XML) ->  [XML] {
         let colorMatches = Array(Set(colorMatches))
 
         return colorMatches.compactMap { colorMatch in
-            guard !currentResources.childElements.contains(where: { $0.attributes["name"] == colorMatch.name }) else {
+            guard !currentResources.children.contains(where: { $0.attributes["name"] == colorMatch.name }) else {
                 print("Trying to add a color already existing. Name: \(colorMatch.name)")
 
                 return nil
             }
 
-            let newColorElement = XML.Element(name: "color")
+            let newColorElement = XML(name: "color")
             newColorElement.attributes = [
                 "red": "\(colorMatch.color.redComponent)",
                 "green": "\(colorMatch.color.greenComponent)",
@@ -146,16 +142,16 @@ final class XibCatalogParser {
                 "customColorSpace": "sRGB"
             ]
 
-            let namedColorResource = XML.Element(name: "namedColor")
+            let namedColorResource = XML(name: "namedColor")
             namedColorResource.attributes = ["name": colorMatch.name]
-            namedColorResource.childElements = [newColorElement]
+            namedColorResource.addChild(newColorElement)
 
             return namedColorResource
         }
     }
 
     @discardableResult
-    private static func replace(from elements: [XML.Element], index: Int, colorMatches: [ColorSpec]) -> Int {
+    private static func replace(from elements: [XML], index: Int, colorMatches: [ColorSpec]) -> Int {
         var currentIndex = index
 
         elements.forEach { element in
@@ -167,7 +163,7 @@ final class XibCatalogParser {
                 currentIndex += 1
             }
 
-            currentIndex = self.replace(from: element.childElements, index: currentIndex, colorMatches: colorMatches)
+            currentIndex = self.replace(from: element.children, index: currentIndex, colorMatches: colorMatches)
         }
 
         return currentIndex

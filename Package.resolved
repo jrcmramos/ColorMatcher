@@ -11,12 +11,12 @@
         }
       },
       {
-        "package": "SwiftyXMLParser",
-        "repositoryURL": "https://github.com/jrcmramos/SwiftyXMLParser.git",
+        "package": "SwiftyXML",
+        "repositoryURL": "https://github.com/chenyunguiMilook/SwiftyXML.git",
         "state": {
-          "branch": "#43-SPM",
-          "revision": "b4ae1e8d05c6c34ab1c47a30dab0e1d8ec0d5013",
-          "version": null
+          "branch": null,
+          "revision": "29a2f3b3d59bb21bbb26fae217844b9e29d299e2",
+          "version": "3.0.2"
         }
       }
     ]
