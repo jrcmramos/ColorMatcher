@@ -104,13 +104,18 @@ final class XibCatalogParser {
         let allElements = xml.all ?? []
 
         self.replace(from: allElements, index: 0, colorMatches: colorMatches)
-        let resources = xml.document.resources.element ?? XML.Element(name: "resources")
+
+        let resources = xml[0].document.resources.element ?? {
+            let newResourcesElement = XML.Element(name: "resources")
+            allElements[0].childElements[0].childElements += [newResourcesElement]
+
+            return newResourcesElement
+        }()
         let namedColors1 = namedColors(for: colorMatches, currentResources: resources)
-        resources.childElements = namedColors1
+        resources.childElements += namedColors1
 
         // allElements[0] -> Root node
         // allElements[0].childElements[0] -> Document node
-        allElements[0].childElements[0].childElements += [resources]
 
         do {
             let document = try XML.document(.init(allElements))
