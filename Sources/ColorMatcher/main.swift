@@ -97,6 +97,9 @@ struct Distance: ParsableCommand {
         }
 
         XibCatalogParser.replaceXib(at: self.originalColors, with: colorMatches)
+        // XML element's attributes are parsed as dictionaries, we cannot guarantee the same order as before
+        // Using `intool` we can respect Xcode's sorting and formatting
+        shell("ibtool", "--upgrade", self.originalColors, "--write", self.originalColors)
     }
 }
 
