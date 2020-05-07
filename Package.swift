@@ -9,7 +9,7 @@ let package = Package(
        .macOS(.v10_14)
     ],
     products: [
-        .executable(name: "App", targets: ["App"]),
+        .executable(name: "color-matcher", targets: ["App"]),
         .library(name: "Core", targets: ["Core"]),
     ],
     dependencies: [

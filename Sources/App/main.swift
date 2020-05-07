@@ -18,7 +18,7 @@ struct Match: ParsableCommand {
     private var originalColors: String
 
     // Specs
-    @Argument(help: "Color specifications.  You can provide a hexadecimal value, asset catalog path or a json file with `ColorSpec` format")
+    @Argument(help: "Color specifications. You can provide a hexadecimal value, asset catalog path or a json file with `ColorSpec` format")
     private var specColors: String
 
     // Results
