@@ -24,8 +24,8 @@ struct ColorAssetCatalog: Codable {
 
 fileprivate extension ColorSpec {
 
-    init?(name: String, assetCatalog: ColorAssetCatalog) {
-        guard let firstColor = assetCatalog.colors.first?.color else {
+    init?(name: String, colorAssetCatalog: ColorAssetCatalog) {
+        guard let firstColor = colorAssetCatalog.colors.first?.color else {
             return nil
         }
 
@@ -74,7 +74,7 @@ final class AssetCatalogParser {
                 continue
             }
 
-            guard let colorSpec = ColorSpec(name: colorName, assetCatalog: colorAssetCatalog) else {
+            guard let colorSpec = ColorSpec(name: colorName, colorAssetCatalog: colorAssetCatalog) else {
                 continue
             }
 
