@@ -33,7 +33,7 @@ private enum XibColor {
                  let blue = element.attributes["blue"].flatMap(Float.init) else {
                print("Didn't find all RGB elements for colorSpace: \(colorSpaceDescriptor)")
                return nil
-           }
+            }
 
             self = .calibratedRGB(red: red, green: green, blue: blue)
 
@@ -56,9 +56,8 @@ private enum XibColor {
             let rFactor = (red * 255.0).toHex
             let gFactor = (green * 255.0).toHex
             let bFactor = (blue * 255.0).toHex
-
             let hex = rFactor + gFactor + bFactor
-
+            
             return ColorSpec(name: name, value: hex)
         }
     }
