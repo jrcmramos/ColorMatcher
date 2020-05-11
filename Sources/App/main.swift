@@ -85,11 +85,18 @@ struct Match: ParsableCommand {
             let matchImage = NSImage.makeImage(with: match.color)
 
             let colorFolderPath = resultsFolder + "/" + original.name
-            File.createFolder(with: colorFolderPath)
+            File.create(folderPath: colorFolderPath)
 
             saveImage(originalImage, original, "original")
             saveImage(matchImage, original, "match")
+
+            self.createResultSpec(original: original, match: match, resultsFolder: colorFolderPath + "/values.json")
         }
+    }
+
+    private func createResultSpec(original: Core.ColorSpec, match: Core.ColorSpec, resultsFolder: String) {
+        let resultSpec: [Core.ColorSpec] = [original, match]
+        File.write(to: resultsFolder, content: resultSpec)
     }
 
     private func replaceXibColorsIfNeeded(originalColorsInput: Input, colorMatches: [Core.ColorSpec]) {
